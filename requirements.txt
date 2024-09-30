@@ -1,0 +1,3 @@
+PyAudio==0.2.14
+screeninfo==0.8.1
+tobii-research==1.11.0
