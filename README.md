@@ -6,7 +6,7 @@ for the calibration display, and start the calibration.  Additionally, once the 
 current gaze position and eye position can be displayed.
 
 The following dependencies can be installed using pip:
-* tobii_research
+* tobii-research==1.11.0
 * screeninfo
 * pyaudio
 

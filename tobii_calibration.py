@@ -146,6 +146,7 @@ class MainApp:
         # if there is only one eyetracker, select it
         if len(et_labels) == 1:
             self.et_var.set(et_labels[0])
+            self.select_eyetracker()
 
     def find_screens(self):
         screens = get_monitors()
@@ -160,7 +161,7 @@ class MainApp:
     def select_eyetracker(self, e):
         selected_idx = self.et_combo.current()
 
-        serial_number = self.et_var.get().split('_', 1)
+        serial_number = self.et_var.get().split('_', 1)[1]
 
         # search by serial number
         eyetrackers = tr.find_all_eyetrackers()
