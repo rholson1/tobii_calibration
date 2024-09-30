@@ -136,9 +136,9 @@ class MainApp:
         et_labels = ['_'.join([et.model, et.serial_number]) for et in eyetrackers]
 
         # for testing without an attached ET
-        et_labels = ['Eyetracker_1', 'Eyetracker_2', 'Eyetracker_3', 'Eyetracker_4']
-        random.shuffle(et_labels)
-
+        if FAKE_CALIBRATION:
+            et_labels = ['Eyetracker_1', 'Eyetracker_2', 'Eyetracker_3', 'Eyetracker_4']
+            random.shuffle(et_labels)
 
         # populate combobox
         self.et_combo['values'] = et_labels
