@@ -158,7 +158,7 @@ class MainApp:
             self.screen_cbo.set(screen_labels[0])
 
 
-    def select_eyetracker(self, e):
+    def select_eyetracker(self, e=None):
         selected_idx = self.et_combo.current()
 
         serial_number = self.et_var.get().split('_', 1)[1]
