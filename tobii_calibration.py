@@ -12,6 +12,7 @@ from functools import partial
 from screeninfo import get_monitors
 import pyaudio
 import wave
+import sys
 
 VERSION_MAJOR = 1
 VERSION_MINOR = 0
@@ -66,11 +67,8 @@ class MainApp:
 
 
     def close_app(self):
-        try:
-            self.et.unsubscribe_from(tr.EYETRACKER_GAZE_DATA, self.gaze_data_callback)
-        except:
-            pass
         self.parent.destroy()
+        sys.exit()
 
     def build_layout(self):
         self.root.title(self.window_title)
