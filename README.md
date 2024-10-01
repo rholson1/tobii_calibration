@@ -6,8 +6,7 @@ for the calibration display, and start the calibration.  Additionally, once the 
 current gaze position and eye position can be displayed.
 
 The Tobii Pro SDK currently (9/2024) only supports **Python 3.10**.  Additionally, I ran into trouble detecting eye trackers
-using the most recent version (2.0.0) of the Tobii Pro SDK, but I found that version **1.11.0** worked (which is why that
-version is specified below).  
+using the most recent version (2.0.0) of the Tobii Pro SDK, but I found that version **1.11.0** worked (which is why that version is specified below).  
 
 
 The following dependencies can be installed using pip:
@@ -17,5 +16,7 @@ The following dependencies can be installed using pip:
 
 During calibration, a dot moves across the screen to several calibration points, where it then shrinks and swells.  An
 audio file is played when the dot reaches each calibration point.
+
+The audio device is selected by setting the value of CALIBRATION_AUDIO_DEVICE near the top of tobii_calibration.py.
 
 
