@@ -46,7 +46,10 @@ class MainApp:
         self.sound_cursor = 0
         self.pyaudio = None
 
-
+        # variables for plotting gaze and eyes in the main window canvas
+        self.gaze = None
+        self.eye_left = None
+        self.eye_right = None
 
         # variables for widgets
         self.et_var = tk.StringVar()
@@ -176,6 +179,9 @@ class MainApp:
 
 
     def gaze_data_callback(self, data):
+        
+        self.canvas_width = self.canvas.winfo_width()
+        self.canvas_height = self.canvas.winfo_height()
 
         if self.gaze_var.get() == 1:
             gaze_left = data['left_gaze_point_on_display_area']
@@ -193,8 +199,11 @@ class MainApp:
 
 
         if self.eye_var.get() == 1:
-            # plot eye position TBD
-            pass
+            # plot eye position
+            # the trackbox coordinate system has its origin in the (forward) upper right, increasing down and left
+            left_eye_x, left_eye_y = data['left_gaze_origin_in_trackbox_coordinate_system'][:2]
+            right_eye_x, right_eye_y = data['right_gaze_origin_in_trackbox_coordinate_system'][:2]
+            self.plot_eyes(1-left_eye_x, left_eye_y, 1-right_eye_x, right_eye_y)
 
         # Update dist_bar to show position in z-coordinates track box coordinate system
         # (normalized with 0 closest to ET and 1 farthest)
@@ -239,9 +248,33 @@ class MainApp:
 
     def plot_gaze(self, x, y):
         """Draw the gaze position in the main window canvas"""
-        RADIUS = 10  # px?
-        self.canvas.create_oval(x-RADIUS, y-RADIUS, x+RADIUS, y+RADIUS)
-
+        R = 10
+        X = x * self.canvas_width
+        Y = y + self.canvas_height
+        if self.gaze:
+            self.canvas.coords(self.gaze, X-R, Y-R, X+R, Y+R)
+        else:
+            self.gaze = self.canvas.create_oval(X-R, Y-R, X+R, Y+R, fill='red')
+        
+    def plot_eyes(self, x1, y1, x2, y2):
+        """Draw the eye positions in the main window canvas"""
+        R = 10
+        X1 = x1 * self.canvas_width
+        Y1 = y1 + self.canvas_height
+        X2 = x2 * self.canvas_width
+        Y2 = y2 + self.canvas_height
+        
+        if self.eye_left:
+            self.canvas.coords(self.eye_left, X1-R, Y1-R, X1+R, Y1+R)
+        else:
+            self.eye_left = self.canvas.create_oval(X1-R, Y1-R, X1+R, Y1+R, fill='black', outline='blue', width=4)
+        
+        if self.eye_right:
+            self.canvas.coords(self.eye_right, X2-R, Y2-R, X2+R, Y2+R)
+        else:
+            self.eye_right = self.canvas.create_oval(X2-R, Y2-R, X2+R, Y2+R, fill='black', outline='blue', width=4)
+        
+        
 
     def calibrate(self, e=None):
 
@@ -364,6 +397,7 @@ class MainApp:
                 if self.calib_index == len(self.calib_targets) - 1:
                     # Done with calibration!
                     self.close_calibration()
+                    return
                 else:
                     self.calib_index += 1
                     self.calib_state = CalibrationState.MOVING
