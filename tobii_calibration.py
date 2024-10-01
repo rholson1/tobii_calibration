@@ -67,7 +67,6 @@ class MainApp:
 
 
     def close_app(self):
-        self.parent.destroy()
         sys.exit()
 
     def build_layout(self):
