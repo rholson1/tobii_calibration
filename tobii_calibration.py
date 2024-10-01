@@ -381,9 +381,10 @@ class MainApp:
         if not FAKE_CALIBRATION:
             try:
                 self.calibration.compute_and_apply()
+                self.calibration.leave_calibration_mode()
             except Exception as e:
                 messagebox.showerror(message=str(e), title='Calibration error')
-            self.calibration.leave_calibration_mode()
+
 
         self.calib_window.destroy()
 
