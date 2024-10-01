@@ -295,8 +295,9 @@ class MainApp:
         # notable properties of screen include x, y, width, height
 
         self.calib_window = tk.Toplevel(self.parent)  # create new toplevel window
-        self.calib_window.geometry(f'+{screen.x}+{screen.y}')  # position window on the selected screen
-        self.calib_window.attributes('-fullscreen', True)  # make window fullscreen
+        self.calib_window.geometry(f'{screen.width}x{screen.height}+{screen.x}+{screen.y}')  # position window on the selected screen
+        self.calib_window.overrideredirect(True)  # no window decorations (e.g. titlebar, border)
+        #self.calib_window.attributes('-fullscreen', True)  # make window fullscreen
         self.calib_window.grid_columnconfigure(0, weight=1)
         self.calib_window.grid_rowconfigure(0, weight=1)
 
