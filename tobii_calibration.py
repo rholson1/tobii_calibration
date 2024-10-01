@@ -66,6 +66,10 @@ class MainApp:
 
 
     def close_app(self):
+        try:
+            self.et.unsubscribe_from(tr.EYETRACKER_GAZE_DATA, self.gaze_data_callback)
+        except:
+            pass
         self.parent.destroy()
 
     def build_layout(self):
