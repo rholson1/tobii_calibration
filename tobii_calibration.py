@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, messagebox
 
 import tobii_research as tr
 import time
@@ -379,7 +379,10 @@ class MainApp:
 
         # complete calibration
         if not FAKE_CALIBRATION:
-            self.calibration.compute_and_apply()
+            try:
+                self.calibration.compute_and_apply()
+            except Exception as e:
+                messagebox.showerror(message=str(e), title='Calibration error')
             self.calibration.leave_calibration_mode()
 
         self.calib_window.destroy()
