@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import ttk, messagebox, font
 
 import tobii_research as tr
 import time
@@ -126,7 +126,9 @@ class MainApp:
         self.dist_bar.grid(row=0, column=2, sticky='nsew')
         self.dist_bar['value'] = 50
 
-        ttk.Label(self.bottom_frame, text='Screen').grid(row=1, column=0, sticky='nsew')
+        #ttk.Label(self.bottom_frame, text='Screen').grid(row=1, column=0, sticky='nsew')
+        self.screen_btn = ttk.Button(self.bottom_frame, text='Screen', command=self.identify_screens)
+        self.screen_btn.grid(row=1, column=0, sticky='nsew')
         self.screen_cbo = ttk.Combobox(self.bottom_frame, textvariable=self.screen_var)
         self.screen_cbo.grid(row=1, column=1, sticky='nsew')
 
@@ -416,11 +418,11 @@ class MainApp:
         # complete calibration
         if not FAKE_CALIBRATION:
             try:
-                self.calibration.compute_and_apply()
+                result = self.calibration.compute_and_apply()
+                messagebox.showinfo(title='Calibration result', message=f'Compute and apply returned: {result.status} and collected at {len(result.calibration_points)} points.')
                 self.calibration.leave_calibration_mode()
             except Exception as e:
                 messagebox.showerror(message=str(e), title='Calibration error')
-
 
         self.calib_window.destroy()
 
@@ -483,6 +485,28 @@ class MainApp:
                                    stream_callback=self.sound_callback)
         stream.start_stream()
         return False
+
+    def identify_screens(self):
+        # Display the screen number on each screen
+        screens = get_monitors()
+
+        self.screen_id_windows = [tk.Toplevel(self.parent) for s in screens]
+        screen_number = 0
+        id_font = font.Font(size=40)
+        for window, screen in zip(self.screen_id_windows, screens):
+            screen_number += 1
+            # create a window centered on the screen
+            window.geometry(f'200x200+{screen.x + int(screen.width/2) - 100}+{screen.y + int(screen.height/2) - 100}')
+            window.overrideredirect(True)  # no window decorations
+            window.grid_columnconfigure(0, weight=1)
+            window.grid_rowconfigure(0, weight=1)
+            ttk.Label(window, text=f'{screen_number}', font=id_font, padding=80).grid(row=0, column=0, sticky='nsew')
+
+        self.root.after(5000, self.close_id_screens)
+
+    def close_id_screens(self):
+        for window in self.screen_id_windows:
+            window.destroy()
 
 if __name__ == '__main__':
 
