@@ -203,11 +203,11 @@ class MainApp:
             gaze_left = data['left_gaze_point_on_display_area']
             gaze_right = data['right_gaze_point_on_display_area']
             #print(f'gaze left = {gaze_left}, gaze_right = {gaze_right}')
-            if isnan(gaze_left) and isnan(gaze_right):
+            if isnan(gaze_left[0]) and isnan(gaze_right[0]):
                 pass  # no data to plot
-            elif isnan(gaze_left):
+            elif isnan(gaze_left[0]):
                 self.plot_gaze(*gaze_right)
-            elif isnan(gaze_right):
+            elif isnan(gaze_right[0]):
                 self.plot_gaze(*gaze_left)
             else:
                 # compute average of left and right eye gaze positions
@@ -267,7 +267,7 @@ class MainApp:
         """Draw the gaze position in the main window canvas"""
         R = 10
         X = x * self.canvas_width
-        Y = y + self.canvas_height
+        Y = y * self.canvas_height
         if self.gaze:
             self.canvas.coords(self.gaze, X-R, Y-R, X+R, Y+R)
         else:
@@ -277,9 +277,9 @@ class MainApp:
         """Draw the eye positions in the main window canvas"""
         R = 10
         X1 = x1 * self.canvas_width
-        Y1 = y1 + self.canvas_height
+        Y1 = y1 * self.canvas_height
         X2 = x2 * self.canvas_width
-        Y2 = y2 + self.canvas_height
+        Y2 = y2 * self.canvas_height
         
         if self.eye_left:
             self.canvas.coords(self.eye_left, X1-R, Y1-R, X1+R, Y1+R)
