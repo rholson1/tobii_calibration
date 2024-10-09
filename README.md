@@ -5,12 +5,10 @@ Running the script will open a window with widgets to select the eye tracker, ch
 for the calibration display, and start the calibration.  Additionally, once the eye tracker has been selected, the
 current gaze position and eye position can be displayed.
 
-The Tobii Pro SDK currently (9/2024) only supports **Python 3.10**.  Additionally, I ran into trouble detecting eye trackers
-using the most recent version (2.0.0) of the Tobii Pro SDK, but I found that version **1.11.0** worked (which is why that version is specified below).  
-
+The Tobii Pro SDK currently (9/2024) only supports **Python 3.10**.  
 
 The following dependencies can be installed using pip:
-* tobii-research==1.11.0
+* tobii-research
 * screeninfo
 * pyaudio
 
