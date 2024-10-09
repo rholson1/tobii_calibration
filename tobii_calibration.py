@@ -26,7 +26,7 @@ class CalibrationState(Enum):
     GROWING = 3
 
 
-CALIBRATION_AUDIO_DEVICE = 1  # Index of the audio device to use for calibration sounds (in range(PyAudio().get_device_count())
+CALIBRATION_AUDIO_DEVICE = 4  # Index of the audio device to use for calibration sounds (in range(PyAudio().get_device_count())
 
 is_close = partial(isclose, abs_tol=0.001)
 
@@ -67,6 +67,11 @@ class MainApp:
 
 
     def close_app(self):
+        
+        #print('Unsubscribing from gaze data')
+        # self.et.unsubscribe_from(tr.EYETRACKER_GAZE_DATA)
+        #print("Unsubscribed from gaze data.")   
+        self.root.destroy()
         sys.exit()
 
     def build_layout(self):
@@ -117,10 +122,10 @@ class MainApp:
 
         # bottom controls
 
-        self.eyes_chk = tk.Checkbutton(self.bottom_frame, text='Eyes')
+        self.eyes_chk = tk.Checkbutton(self.bottom_frame, text='Eyes', variable=self.eye_var)
         self.eyes_chk.grid(row=0, column=0, sticky='nsew')
 
-        self.gaze_chk = tk.Checkbutton(self.bottom_frame, text='Gaze')
+        self.gaze_chk = tk.Checkbutton(self.bottom_frame, text='Gaze', variable=self.gaze_var)
         self.gaze_chk.grid(row=0, column=1, sticky='nsew')
         self.dist_bar = ttk.Progressbar(self.bottom_frame, mode='determinate', value=0)
         self.dist_bar.grid(row=0, column=2, sticky='nsew')
@@ -186,9 +191,12 @@ class MainApp:
         self.canvas_width = self.canvas.winfo_width()
         self.canvas_height = self.canvas.winfo_height()
 
+        #print(f'{self.canvas_width=}, {self.canvas_height=}')
+
         if self.gaze_var.get() == 1:
             gaze_left = data['left_gaze_point_on_display_area']
             gaze_right = data['right_gaze_point_on_display_area']
+            #print(f'gaze left = {gaze_left}, gaze_right = {gaze_right}')
             if isnan(gaze_left) and isnan(gaze_right):
                 pass  # no data to plot
             elif isnan(gaze_left):
