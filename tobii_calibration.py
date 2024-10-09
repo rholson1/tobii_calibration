@@ -433,12 +433,57 @@ class MainApp:
         if not FAKE_CALIBRATION:
             try:
                 result = self.calibration.compute_and_apply()
-                messagebox.showinfo(title='Calibration result', message=f'Compute and apply returned: {result.status} and collected at {len(result.calibration_points)} points.')
+                # messagebox.showinfo(title='Calibration result', message=f'Compute and apply returned: {result.status} and collected at {len(result.calibration_points)} points.')
                 self.calibration.leave_calibration_mode()
+                self.plot_calibration(result)
             except Exception as e:
                 messagebox.showerror(message=str(e), title='Calibration error')
 
         self.calib_window.destroy()
+
+    def plot_calibration(self, result):
+        # create a calibration result plot, showing the calibration points and the gaze data points which were used
+
+        def plot_point(x, y):
+            R = 5
+            X = x * self.calib_plot_canvas.winfo_width()
+            Y = y * self.calib_plot_canvas.winfo_height()
+            self.calib_plot_canvas.create_oval(X - R, Y - R, X + R, Y + R, outline='black', width=2)
+
+        def plot_calibration_sample(position, sample):
+            # plot calibration sample as lines from the calibration point
+            line_colors = {'left_eye': 'green', 'right_eye': 'red'}
+
+            X0 = position[0] * self.calib_plot_canvas.winfo_width()
+            Y0 = position[1] * self.calib_plot_canvas.winfo_height()
+            for eye in ('left_eye', 'right_eye'):
+                eyedata = getattr(sample, eye)
+
+                X1 = eyedata.position_on_display_area[0] * self.calib_plot_canvas.winfo_width()
+                Y1 = eyedata.position_on_display_area[1] * self.calib_plot_canvas.winfo_height()
+                if eyedata.validity == tr.VALIDITY_VALID_AND_USED:
+                    self.calib_plot_canvas.create_line(X0, Y0, X1, Y1, fill=line_colors[eye], width=2)
+
+        # create a window for the display
+        self.calib_plot_window = tk.Toplevel(self.parent)
+        self.calib_plot_window.geometry('640x480')
+        self.calib_plot_window.title(f'Calibration: {result.status}')
+        self.calib_plot_window.grid_columnconfigure(0, weight=1)
+        self.calib_plot_window.grid_rowconfigure(0, weight=1)
+        self.calib_plot_canvas = tk.Canvas(self.calib_plot_window)
+        self.calib_plot_canvas.grid(row=0, column=0, sticky='nsew')
+
+        calibration_points = result.calibration_points  # tuple of calibration points
+
+        for point in calibration_points:
+            position = point.position_on_display_area
+            plot_point(*position)
+
+            samples = point.calibration_samples  # tuple of calibration samples
+            # plot the calibration point at position
+            for sample in samples:
+                plot_calibration_sample(position, sample)
+
 
 
     def load_sound(self):
