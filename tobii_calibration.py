@@ -38,7 +38,7 @@ class MainApp:
 
         self.parent = parent
         self.root = tk.Toplevel(parent)
-        self.root.protocol('WM_DELETE_WINDOW', self.close_app)
+        self.root.protocol('WM_DELETE_WINDOW', self.prepare_to_close)
         self.root.minsize(500, 500)
 
         self.et = None  # eyetracker object
@@ -65,13 +65,15 @@ class MainApp:
         self.find_eyetrackers()
         self.find_screens()
 
+        self.callback_enabled = True
+
+    def prepare_to_close(self):
+        self.callback_enabled = False
+        self.root.after(1000, self.close_app)
 
     def close_app(self):
-        
-        #print('Unsubscribing from gaze data')
-        # self.et.unsubscribe_from(tr.EYETRACKER_GAZE_DATA)
-        #print("Unsubscribed from gaze data.")   
-        self.root.destroy()
+        if self.et:
+            self.et.unsubscribe_from(tr.EYETRACKER_GAZE_DATA)
         sys.exit()
 
     def build_layout(self):
@@ -187,6 +189,10 @@ class MainApp:
 
 
     def gaze_data_callback(self, data):
+
+        # need to be able to short-circuit the callback to enable a clean exit
+        if not self.callback_enabled:
+            return
         
         self.canvas_width = self.canvas.winfo_width()
         self.canvas_height = self.canvas.winfo_height()
