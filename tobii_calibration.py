@@ -69,7 +69,7 @@ class MainApp:
 
     def prepare_to_close(self):
         self.callback_enabled = False
-        self.root.after(1000, self.close_app)
+        self.root.after(250, self.close_app)
 
     def close_app(self):
         if self.et:
@@ -140,6 +140,7 @@ class MainApp:
         self.screen_cbo.grid(row=1, column=1, sticky='nsew')
 
         self.calibrate_btn = ttk.Button(self.bottom_frame, text='Calibrate', command=self.calibrate)
+        #self.calibrate_btn = ttk.Button(self.bottom_frame, text='Calibrate', command=self.test_calibration_plot)
         self.calibrate_btn.grid(row=1, column=2, sticky='nsew')
 
     def find_eyetrackers(self, e=None):
@@ -343,10 +344,6 @@ class MainApp:
         self.run_calibration()
 
 
-
-        # canvas.create_rectangle(0, 0, screen.width/2, screen.height/2, fill='red')
-        # self.calib_window.after(4000, self.close_calibration)
-
     def draw_calib_dot(self, x, y, r, create=False):
         """Draw the calib guide dot in the calibration canvas.
 
@@ -445,14 +442,15 @@ class MainApp:
         # create a calibration result plot, showing the calibration points and the gaze data points which were used
 
         def plot_point(x, y):
-            R = 5
+
+            R = 15
             X = x * self.calib_plot_canvas.winfo_width()
             Y = y * self.calib_plot_canvas.winfo_height()
             self.calib_plot_canvas.create_oval(X - R, Y - R, X + R, Y + R, outline='black', width=2)
 
         def plot_calibration_sample(position, sample):
             # plot calibration sample as lines from the calibration point
-            line_colors = {'left_eye': 'green', 'right_eye': 'red'}
+            line_colors = {'left_eye': 'red', 'right_eye': 'green'}
 
             X0 = position[0] * self.calib_plot_canvas.winfo_width()
             Y0 = position[1] * self.calib_plot_canvas.winfo_height()
@@ -472,6 +470,7 @@ class MainApp:
         self.calib_plot_window.grid_rowconfigure(0, weight=1)
         self.calib_plot_canvas = tk.Canvas(self.calib_plot_window)
         self.calib_plot_canvas.grid(row=0, column=0, sticky='nsew')
+        self.calib_plot_window.update()
 
         calibration_points = result.calibration_points  # tuple of calibration points
 
@@ -484,6 +483,78 @@ class MainApp:
             for sample in samples:
                 plot_calibration_sample(position, sample)
 
+        # write to postscript file
+        #self.calib_plot_canvas.postscript(file='test.ps', colormode='color')
+
+    def test_calibration_plot(self):
+        class CalibrationPoint:
+            def __init__(self, position_on_display_area, calibration_samples):
+                self.position_on_display_area = position_on_display_area
+                self.calibration_samples = calibration_samples
+        class CalibrationSample:
+            def __init__(self, left_eye, right_eye):
+                self.left_eye = left_eye
+                self.right_eye = right_eye
+        class CalibrationEyeData:
+            def __init__(self, validity, position_on_display_area):
+                self.validity = validity
+                self.position_on_display_area = position_on_display_area
+
+        calibration_points = (
+            CalibrationPoint(
+                position_on_display_area=(0.1, 0.1),
+                calibration_samples=(
+                    CalibrationSample(
+                        left_eye=CalibrationEyeData(
+                            validity=tr.VALIDITY_VALID_AND_USED,
+                            position_on_display_area=(0.15, 0.15)
+                        ),
+                        right_eye=CalibrationEyeData(
+                            validity=tr.VALIDITY_VALID_AND_USED,
+                            position_on_display_area=(0.05, 0.15)
+                        )
+                    ),
+                    CalibrationSample(
+                        left_eye=CalibrationEyeData(
+                            validity=tr.VALIDITY_VALID_AND_USED,
+                            position_on_display_area=(0.21, 0.05)
+                        ),
+                        right_eye=CalibrationEyeData(
+                            validity=tr.VALIDITY_VALID_AND_USED,
+                            position_on_display_area=(0.18, 0.12)
+                        )
+                    )
+                )
+            ),
+            CalibrationPoint(
+                position_on_display_area=(0.8, 0.2),
+                calibration_samples=(
+                    CalibrationSample(
+                        left_eye=CalibrationEyeData(
+                            validity=tr.VALIDITY_VALID_AND_USED,
+                            position_on_display_area=(0.85, 0.25)
+                        ),
+                        right_eye=CalibrationEyeData(
+                            validity=tr.VALIDITY_VALID_AND_USED,
+                            position_on_display_area=(0.85, 0.3)
+                        )
+                    ),
+                    CalibrationSample(
+                        left_eye=CalibrationEyeData(
+                            validity=tr.VALIDITY_VALID_AND_USED,
+                            position_on_display_area=(0.71, 0.15)
+                        ),
+                        right_eye=CalibrationEyeData(
+                            validity=tr.VALIDITY_VALID_AND_USED,
+                            position_on_display_area=(0.88, 0.12)
+                        )
+                    )
+                )
+            )
+        )
+
+        fake_result = tr.CalibrationResult(status=tr.CALIBRATION_STATUS_SUCCESS, calibration_points=calibration_points)
+        self.plot_calibration(fake_result)
 
 
     def load_sound(self):
