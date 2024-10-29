@@ -450,7 +450,7 @@ class MainApp:
             X = x * self.calib_plot_canvas.winfo_width()
             Y = y * self.calib_plot_canvas.winfo_height()
             self.calib_plot_canvas.create_oval(X - R, Y - R, X + R, Y + R, outline='black', width=2)
-            self.calib_image_draw.circle(X, Y, radius=R, fill='white', outline='black', width=2)
+            self.calib_image_draw.circle((X, Y), radius=R, fill='white', outline='black', width=2)
 
         def plot_calibration_sample(position, sample):
             # plot calibration sample as lines from the calibration point
