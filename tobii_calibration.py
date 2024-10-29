@@ -13,6 +13,8 @@ from screeninfo import get_monitors
 import pyaudio
 import wave
 import sys
+from PIL import Image, ImageDraw
+from datetime import datetime
 
 VERSION_MAJOR = 1
 VERSION_MINOR = 0
@@ -447,6 +449,7 @@ class MainApp:
             X = x * self.calib_plot_canvas.winfo_width()
             Y = y * self.calib_plot_canvas.winfo_height()
             self.calib_plot_canvas.create_oval(X - R, Y - R, X + R, Y + R, outline='black', width=2)
+            self.calib_image_draw.circle(X, Y, radius=R, fill='white', outline='black', width=2)
 
         def plot_calibration_sample(position, sample):
             # plot calibration sample as lines from the calibration point
@@ -461,6 +464,7 @@ class MainApp:
                 Y1 = eyedata.position_on_display_area[1] * self.calib_plot_canvas.winfo_height()
                 if eyedata.validity == tr.VALIDITY_VALID_AND_USED:
                     self.calib_plot_canvas.create_line(X0, Y0, X1, Y1, fill=line_colors[eye], width=2)
+                    self.calib_image_draw.line((X0, Y0, X1, Y1), fill=line_colors[eye], width=2)
 
         # create a window for the display
         self.calib_plot_window = tk.Toplevel(self.parent)
@@ -471,6 +475,10 @@ class MainApp:
         self.calib_plot_canvas = tk.Canvas(self.calib_plot_window)
         self.calib_plot_canvas.grid(row=0, column=0, sticky='nsew')
         self.calib_plot_window.update()
+
+        # create an in-memory image so that the calibration plot can be saved.
+        calib_image = Image.new('RGB', (640, 480), 'white')
+        self.calib_image_draw = ImageDraw.Draw(calib_image)
 
         calibration_points = result.calibration_points  # tuple of calibration points
 
@@ -483,8 +491,9 @@ class MainApp:
             for sample in samples:
                 plot_calibration_sample(position, sample)
 
-        # write to postscript file
-        #self.calib_plot_canvas.postscript(file='test.ps', colormode='color')
+        # write calibration image to file
+        filename = f"calibration_images/calibration_{datetime.now().strftime('%Y-%m-%d_%H%M')}.png"
+        calib_image.save(filename)
 
     def test_calibration_plot(self):
         class CalibrationPoint:
