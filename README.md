@@ -11,6 +11,7 @@ The following dependencies can be installed using pip:
 * tobii-research
 * screeninfo
 * pyaudio
+* pillow
 
 During calibration, a dot moves across the screen to several calibration points, where it then shrinks and swells.  An
 audio file is played when the dot reaches each calibration point.

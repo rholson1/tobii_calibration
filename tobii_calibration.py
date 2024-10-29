@@ -15,6 +15,7 @@ import wave
 import sys
 from PIL import Image, ImageDraw
 from datetime import datetime
+import os
 
 VERSION_MAJOR = 1
 VERSION_MINOR = 0
@@ -492,6 +493,9 @@ class MainApp:
                 plot_calibration_sample(position, sample)
 
         # write calibration image to file
+        calib_image_dir = 'calibration_images'
+        if not os.path.exists(calib_image_dir):
+            os.makedirs(calib_image_dir)
         filename = f"calibration_images/calibration_{datetime.now().strftime('%Y-%m-%d_%H%M')}.png"
         calib_image.save(filename)
 
