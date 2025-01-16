@@ -29,7 +29,7 @@ class CalibrationState(Enum):
     GROWING = 3
 
 
-CALIBRATION_AUDIO_DEVICE = 4  # Index of the audio device to use for calibration sounds (in range(PyAudio().get_device_count())
+CALIBRATION_AUDIO_DEVICE = 3  # Index of the audio device to use for calibration sounds (in range(PyAudio().get_device_count())
 
 is_close = partial(isclose, abs_tol=0.001)
 
@@ -77,6 +77,7 @@ class MainApp:
     def close_app(self):
         if self.et:
             self.et.unsubscribe_from(tr.EYETRACKER_GAZE_DATA)
+            self.et.unsubscribe_from(tr.EYETRACKER_USER_POSITION_GUIDE)
         sys.exit()
 
     def build_layout(self):
@@ -187,13 +188,43 @@ class MainApp:
             self.et = selected_et[0]
             # subscribe to ET events
             self.et.subscribe_to(tr.EYETRACKER_GAZE_DATA, self.gaze_data_callback, as_dictionary=True)
-
+            self.et.subscribe_to(tr.EYETRACKER_USER_POSITION_GUIDE , self.user_position_guide_callback, as_dictionary=True)
         else:
             raise Exception('The selected eye tracker does not exist')
 
+    def user_position_guide_callback(self, data):
+        # keys are:
+        # left_user_position (x, y, z)
+        # left_user_position_validity 0/1
+        # right_user_position (x, y, z)
+        # right_user_position_validity 0/1
+
+        left_eye_x, left_eye_y, left_eye_z = data['left_user_position']
+        right_eye_x, right_eye_y, right_eye_z = data['right_user_position']
+
+        #print(data['left_gaze_origin_in_trackbox_coordinate_system'][:2])
+        if self.eye_var.get() == 1:
+            # plot eye position
+            # the trackbox coordinate system has its origin in the (forward) upper right, increasing down and left
+            #print(f'left eye x = {left_eye_x}, left eye y = {left_eye_y}')
+            self.plot_eyes(1-left_eye_x, left_eye_y, 1-right_eye_x, right_eye_y)
+
+        # Update dist_bar to show position in z-coordinates track box coordinate system
+        # (normalized with 0 closest to ET and 1 farthest)
+
+        if isnan(left_eye_z) and isnan(right_eye_z):
+            self.dist_bar['value'] = 0  # maybe should signify no track somehow (color?)
+        elif isnan(left_eye_z):
+            self.dist_bar['value'] = 100 * right_eye_z
+        elif isnan(right_eye_z):
+            self.dist_bar['value'] = 100 * left_eye_z
+        else:
+            # neither left nor right are nan, so use average
+            self.dist_bar['value'] = 50 * (left_eye_z + right_eye_z)
 
     def gaze_data_callback(self, data):
-
+        # if data['left_gaze_point_on_display_area'] != (math.nan, math.nan):
+        #     print(data)
         # need to be able to short-circuit the callback to enable a clean exit
         if not self.callback_enabled:
             return
@@ -219,29 +250,6 @@ class MainApp:
                                (gaze_left[1] + gaze_right[1])/2)
 
 
-        if self.eye_var.get() == 1:
-            # plot eye position
-            # the trackbox coordinate system has its origin in the (forward) upper right, increasing down and left
-            left_eye_x, left_eye_y = data['left_gaze_origin_in_trackbox_coordinate_system'][:2]
-            right_eye_x, right_eye_y = data['right_gaze_origin_in_trackbox_coordinate_system'][:2]
-            self.plot_eyes(1-left_eye_x, left_eye_y, 1-right_eye_x, right_eye_y)
-
-        # Update dist_bar to show position in z-coordinates track box coordinate system
-        # (normalized with 0 closest to ET and 1 farthest)
-
-        # position in track box
-        left_eye_z = data['left_gaze_origin_in_trackbox_coordinate_system'][2]
-        right_eye_z = data['right_gaze_origin_in_trackbox_coordinate_system'][2]
-
-        if isnan(left_eye_z) and isnan(right_eye_z):
-            self.dist_bar['value'] = 0  # maybe should signify no track somehow (color?)
-        elif isnan(left_eye_z):
-            self.dist_bar['value'] = 100 * right_eye_z
-        elif isnan(right_eye_z):
-            self.dist_bar['value'] = 100 * left_eye_z
-        else:
-            # neither left nor right are nan, so use average
-            self.dist_bar['value'] = 50 * (left_eye_z + right_eye_z)
 
 
 
